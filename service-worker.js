@@ -1,6 +1,6 @@
 // service-worker.js
 
-const CACHE_NAME = 'srt-lista-v1';
+const CACHE_NAME = 'srt-lista-v2'; // Alterado para v2 para forçar a atualização do cache
 const urlsToCache = [
   './', // Cache a raiz do site, que deve resolver para index.html
   './index.html',
@@ -9,7 +9,8 @@ const urlsToCache = [
   'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js',
   // Adicione aqui os ícones que você vai criar
   './icon-192.png',
-  './icon-512.png'
+  './icon-512.png',
+  './srt-logo.png' // Adicionado o logo ao cache
 ];
 
 self.addEventListener('install', event => {

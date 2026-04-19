@@ -163,7 +163,6 @@ function abrirModal(catIndex, caminho) {
   if (atual.itens.length > 0) {
     htmlConteudo += `<h3>Itens:</h3>`;
     atual.itens.forEach(item => {
-      // Alterado para não fechar o modal após adicionar à lista
       htmlConteudo += `<div class="lista-item">
         <span onclick='addLista(${catIndex}, ${JSON.stringify(caminho)}, ${JSON.stringify(item)})'>📌 ${item.nome} (${item.unidade})</span>
         <div>
@@ -400,6 +399,30 @@ function addLista(catIndex, caminho, item) {
   renderLista();
 }
 
+// Função para atualizar a quantidade do item na lista
+function atualizarQuantidadeLista(id, novaQtd) {
+  const item = db.lista.find(i => i.id === id);
+  if (item) {
+    const parsedQtd = parseInt(novaQtd);
+    if (!isNaN(parsedQtd) && parsedQtd >= 0) { // Garante que é um número válido e não negativo
+      item.qtd = parsedQtd;
+      if (item.qtd === 0) { // Se a quantidade for 0, remove o item
+          remover(id); // Reutiliza a função de remover, que já tem a confirmação
+      } else {
+          salvar();
+          renderLista();
+      }
+    } else if (novaQtd.trim() === '') { // Se o campo ficou vazio, também remove
+        remover(id);
+    } else {
+        // Opcional: alertar o usuário sobre entrada inválida, ou simplesmente não fazer nada
+        // alert("Por favor, insira uma quantidade numérica válida.");
+        // Re-renderiza para reverter a mudança visual do input se a entrada for inválida
+        renderLista();
+    }
+  }
+}
+
 function renderLista() {
   const div = document.getElementById("lista");
   div.innerHTML = "";
@@ -432,10 +455,14 @@ function renderLista() {
     grupos[caminho].sort((a, b) => a.nome.localeCompare(b.nome)).forEach(item => {
       grupoHtml += `
         <div class="lista-item">
-          <span>${item.nome} (${item.qtd} ${item.unidade})</span>
+          <span>${item.nome} (${item.unidade})</span>
           <div>
-            <button onclick="menos('${item.id}')">-</button>
-            <button onclick="mais('${item.id}')">+</button>
+            <input type="number" 
+                   class="qtd-input" 
+                   value="${item.qtd}" 
+                   min="0"
+                   onchange="atualizarQuantidadeLista('${item.id}', this.value)"
+                   onblur="atualizarQuantidadeLista('${item.id}', this.value)">
             <button class="delete" onclick="remover('${item.id}')">🗑️</button>
           </div>
         </div>`;
@@ -465,6 +492,9 @@ function toggleGrupo(groupId) {
   }
 }
 
+// As funções 'mais' e 'menos' não são mais necessárias para edição via teclado,
+// mas podem ser mantidas se você quiser adicionar botões de incremento/decremento novamente no futuro.
+// Por enquanto, vou deixá-las, mas elas não serão chamadas.
 function mais(id) {
   const item = db.lista.find(i => i.id === id);
   if (item) {
@@ -489,6 +519,7 @@ function menos(id) {
 }
 
 function remover(id) {
+  // A confirmação para remover já existe, será chamada se a qtd for 0
   if (!confirm("Deseja remover este item da lista?")) return;
   db.lista = db.lista.filter(i => i.id !== id);
   salvar();
@@ -511,6 +542,28 @@ function gerarPDF() {
   const maxPageHeight = doc.internal.pageSize.height - (2 * margin);
   const maxLineWidth = doc.internal.pageSize.width - (2 * margin);
 
+  // --- Adiciona o Logo ---
+  const imgData = 'srt-logo.png'; // Nome do arquivo do seu logo
+  const imgWidth = 40; // Largura do logo no PDF
+  const imgHeight = 15; // Altura do logo no PDF (ajuste conforme proporção)
+
+  // Centraliza a imagem ou posiciona à esquerda
+  // doc.addImage(imgData, 'PNG', (doc.internal.pageSize.width / 2) - (imgWidth / 2), y, imgWidth, imgHeight);
+  doc.addImage(imgData, 'PNG', margin, y, imgWidth, imgHeight); // Posição à esquerda
+  y += imgHeight + 5; // Adiciona espaço após o logo
+
+  // --- Adiciona Nome e Contato ---
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(14); // Fonte ligeiramente maior para o nome/empresa
+  doc.text("Sergio Munhoz", margin, y);
+  y += lineHeight;
+
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(10); // Fonte menor para o contato
+  doc.text("Celular/Whatsapp: 11-9-9370-0324", margin, y);
+  y += 15; // Espaço maior após o cabeçalho completo
+
+
   doc.setFont("helvetica", "bold");
   doc.setFontSize(18);
   doc.text("Lista de Materiais SRT Soluções", margin, y, { align: "left" });
@@ -529,6 +582,17 @@ function gerarPDF() {
     if (y + lineHeight * (grupos[caminho].length + 1) + 5 > maxPageHeight) {
       doc.addPage();
       y = margin;
+      // Recomeça o cabeçalho se a página virar
+      doc.addImage(imgData, 'PNG', margin, y, imgWidth, imgHeight); 
+      y += imgHeight + 5; 
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(14);
+      doc.text("Sergio Munhoz", margin, y);
+      y += lineHeight;
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(10);
+      doc.text("Celular/Whatsapp: 11-9-9370-0324", margin, y);
+      y += 15;
     }
 
     doc.setFont("helvetica", "bold");
@@ -540,7 +604,20 @@ function gerarPDF() {
       if (y + lineHeight > maxPageHeight) {
         doc.addPage();
         y = margin;
+        // Recomeça o cabeçalho se a página virar
+        doc.addImage(imgData, 'PNG', margin, y, imgWidth, imgHeight); 
+        y += imgHeight + 5; 
         doc.setFont("helvetica", "bold");
+        doc.setFontSize(14);
+        doc.text("Sergio Munhoz", margin, y);
+        y += lineHeight;
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(10);
+        doc.text("Celular/Whatsapp: 11-9-9370-0324", margin, y);
+        y += 15;
+
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(12);
         doc.text(`(Continuação) ${caminho}`, margin, y, { maxWidth: maxLineWidth });
         y += lineHeight;
         doc.setFont("helvetica", "normal");

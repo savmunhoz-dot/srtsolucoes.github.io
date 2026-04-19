@@ -169,6 +169,27 @@ button:active {
   margin-left: 5px;
 }
 
+/* NOVO ESTILO PARA O INPUT DE QUANTIDADE */
+.lista-item .qtd-input {
+  width: 60px; /* Largura menor para o campo de quantidade */
+  padding: 5px;
+  text-align: center;
+  margin-right: 5px;
+  font-size: 0.9em;
+  /* Garante que o input tenha o mesmo estilo base dos outros inputs, mas ajustado */
+  border: 1px solid #334155;
+  border-radius: 5px;
+  background: #0f172a;
+  color: white;
+  outline: none;
+}
+
+.lista-item .qtd-input:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.5);
+}
+
+
 /* LISTA AGRUPADA (MINHA LISTA) */
 .grupo {
   margin-bottom: 15px;
@@ -349,5 +370,8 @@ button:active {
   }
   .lista-item div {
     margin-top: 8px;
+  }
+  .lista-item .qtd-input { /* Ajusta largura em telas pequenas */
+    width: 80px; /* Maior para facilitar o toque */
   }
 }
