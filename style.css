@@ -1,0 +1,353 @@
+/* style.css */
+
+body {
+  font-family: Arial, sans-serif;
+  background: #0f172a;
+  color: white;
+  margin: 0;
+  line-height: 1.6;
+}
+
+header {
+  background: #1e293b;
+  padding: 20px;
+  text-align: center;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+header h1 {
+  margin: 0;
+  font-size: 1.8em;
+  color: #f8fafc;
+}
+
+.container {
+  display: flex;
+  flex-wrap: wrap; /* Permite que os boxes quebrem linha em telas menores */
+  gap: 20px;
+  padding: 20px;
+  max-width: 1200px;
+  margin: 20px auto; /* Centraliza o container */
+}
+
+.box {
+  flex: 1;
+  min-width: 300px; /* Garante um tamanho mínimo para os boxes */
+  background: #1e293b;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+  display: flex; /* Para organizar o conteúdo interno */
+  flex-direction: column; /* Conteúdo em coluna */
+}
+
+.box h2 {
+  margin-top: 0;
+  color: #38bdf8;
+  border-bottom: 1px solid #334155;
+  padding-bottom: 10px;
+  margin-bottom: 15px;
+}
+
+.input-group, .busca-group {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 15px;
+  align-items: center; /* Alinha verticalmente os itens */
+}
+
+input {
+  flex: 1;
+  padding: 10px;
+  border: 1px solid #334155;
+  border-radius: 5px;
+  background: #0f172a;
+  color: white;
+  font-size: 1em;
+  outline: none;
+}
+
+input:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.5);
+}
+
+button {
+  padding: 10px 15px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  background: #3b82f6;
+  color: white;
+  font-size: 0.9em;
+  font-weight: bold;
+  transition: background 0.2s ease, transform 0.1s ease;
+}
+
+button:hover {
+  background: #2563eb;
+  transform: translateY(-1px);
+}
+
+button:active {
+  transform: translateY(0);
+}
+
+.delete {
+  background: #e74c3c;
+}
+
+.delete:hover {
+  background: #c0392b;
+}
+
+.btn-clear {
+  width: 100%;
+  margin-bottom: 5px;
+  background: #ef4444;
+  font-weight: bold;
+}
+
+.btn-clear:hover {
+  background: #dc2626;
+}
+
+.btn-pdf {
+  width: 100%;
+  margin-bottom: 15px;
+  background: #22c55e;
+}
+
+.btn-pdf:hover {
+  background: #16a34a;
+}
+
+/* LISTA DE ITENS E CATEGORIAS */
+#itens {
+  flex-grow: 1;
+  overflow-y: auto;
+  max-height: calc(100vh - 280px);
+  padding-right: 5px;
+}
+
+#lista {
+  flex-grow: 1;
+  overflow-y: auto;
+  max-height: calc(100vh - 350px);
+  padding-right: 5px;
+}
+
+
+.lista-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  margin: 4px 0;
+  border-bottom: 1px dashed #334155;
+}
+
+.lista-item:last-of-type {
+  border-bottom: none;
+}
+
+.lista-item span {
+  cursor: pointer;
+  flex-grow: 1;
+  padding-right: 10px;
+}
+
+.lista-item span small {
+  color: #94a3b8;
+  font-size: 0.8em;
+  display: block;
+}
+
+.lista-item div button {
+  padding: 5px 8px;
+  font-size: 0.8em;
+  margin-left: 5px;
+}
+
+/* LISTA AGRUPADA (MINHA LISTA) */
+.grupo {
+  margin-bottom: 15px;
+  border-bottom: 1px solid #334155;
+  padding-bottom: 8px;
+}
+
+.grupo-titulo {
+  font-weight: bold;
+  color: #38bdf8;
+  margin-bottom: 5px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 0;
+}
+
+.grupo-titulo .toggle-icon {
+    font-size: 0.9em;
+    transition: transform 0.2s ease;
+}
+
+.grupo-conteudo {
+  padding-left: 15px;
+  display: block; 
+}
+
+.grupo-conteudo.hidden {
+  display: none !important; 
+}
+
+
+/* MODAL */
+.modal {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.7);
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background: #1e293b;
+  padding: 25px;
+  border-radius: 10px;
+  width: 90%;
+  max-width: 500px;
+  max-height: 80vh;
+  overflow-y: auto; /* Permite scroll no conteúdo */
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+  display: flex; /* Para organizar header, content e footer */
+  flex-direction: column; /* Organiza em coluna */
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+  border-bottom: 1px solid #334155;
+  padding-bottom: 10px;
+}
+
+.modal-header span {
+  font-size: 1.2em;
+  font-weight: bold;
+  color: #f8fafc;
+}
+
+.modal-header button {
+  background: none;
+  border: none;
+  color: #cbd5e1;
+  font-size: 1.5em;
+  cursor: pointer;
+  padding: 0;
+}
+
+.modal-header button:hover {
+  color: white;
+  transform: none;
+}
+
+/* Conteúdo do modal (categorias/itens) */
+#modalConteudo {
+    flex-grow: 1; /* Permite que o conteúdo ocupe o espaço restante */
+    overflow-y: auto; /* Adiciona scroll se o conteúdo for muito longo */
+    padding-right: 5px; /* Espaço para a barra de scroll */
+}
+
+/* Novo estilo para o footer do modal */
+.modal-footer {
+  display: flex;
+  flex-wrap: wrap; /* Permite que os botões quebrem linha */
+  gap: 10px; /* Espaçamento entre os botões */
+  justify-content: flex-end; /* Alinha à direita por padrão */
+  margin-top: 15px;
+  padding-top: 15px;
+  border-top: 1px solid #334155;
+}
+
+/* Botões dentro do modal-footer */
+.modal-footer button {
+  margin: 0; /* Remove margem padrão dos botões globais */
+  padding: 10px 15px;
+  font-size: 0.9em;
+  white-space: nowrap; /* Evita que o texto do botão quebre */
+}
+
+/* Botão de voltar/fechar */
+.modal-footer .btn-voltar {
+  background: #6b7280; /* Cor diferente para o botão de voltar */
+}
+
+.modal-footer .btn-voltar:hover {
+  background: #4b5563;
+}
+
+.modal-content h3 {
+    color: #38bdf8;
+    margin-top: 10px;
+    margin-bottom: 5px;
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+  .container {
+    flex-direction: column;
+    padding: 15px;
+  }
+
+  .box {
+    min-width: unset;
+    margin-bottom: 20px;
+  }
+
+  #itens, #lista {
+    max-height: 400px;
+  }
+
+  .modal-content {
+    width: 95%;
+    padding: 15px;
+  }
+
+  .modal-footer {
+    justify-content: center; /* Centraliza os botões em telas menores */
+  }
+
+  .modal-footer button {
+    width: 100%; /* Botões ocupam largura total em telas muito pequenas */
+  }
+}
+
+@media (max-width: 480px) {
+  header h1 {
+    font-size: 1.5em;
+  }
+
+  .input-group, .busca-group {
+    flex-direction: column;
+  }
+
+  .input-group button, .busca-group button {
+    width: 100%;
+    margin-top: 10px;
+  }
+
+  .lista-item {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .lista-item div {
+    margin-top: 8px;
+  }
+}
