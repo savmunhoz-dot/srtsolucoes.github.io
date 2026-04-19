@@ -165,7 +165,7 @@ function abrirModal(catIndex, caminho) {
     atual.itens.forEach(item => {
       // Alterado para não fechar o modal após adicionar à lista
       htmlConteudo += `<div class="lista-item">
-        <span onclick='addLista(${catIndex}, ${JSON.stringify(caminho)}, ${JSON.stringify(item)});'>📌 ${item.nome}</span>
+        <span onclick='addLista(${catIndex}, ${JSON.stringify(caminho)}, ${JSON.stringify(item)})'>📌 ${item.nome} (${item.unidade})</span>
         <div>
           <button onclick="editarItem(${catIndex}, ${JSON.stringify(caminho)}, '${item.id}')">✏️</button>
           <button class="delete" onclick="excluirItem(${catIndex}, ${JSON.stringify(caminho)}, '${item.id}')">🗑️</button>
@@ -187,11 +187,28 @@ function abrirModal(catIndex, caminho) {
     htmlFooter += `<button onclick='fecharModal()' class="btn-voltar">✕ Fechar</button>`;
   }
   htmlFooter += `<button onclick='addSubcategoria(${catIndex}, ${JSON.stringify(caminho)})'>+ Add Subcategoria</button>`;
-  htmlFooter += `<button onclick='addItem(${catIndex}, ${JSON.stringify(caminho)})'>+ Add Item</button>`;
-
+  htmlFooter += `<button onclick='promptAddItem(${catIndex}, ${JSON.stringify(caminho)})'>+ Add Item</button>`; // Chamada para nova função
+  
   modalFooter.innerHTML = htmlFooter; // Renderiza os botões no footer
   modal.style.display = "flex";
 }
+
+// Nova função para pedir nome e unidade do item
+function promptAddItem(catIndex, caminho) {
+    const nome = prompt("Nome do novo item:");
+    if (!nome || nome.trim() === "") {
+        if (nome !== null) alert("O nome do item não pode ser vazio.");
+        return;
+    }
+
+    let unidade = prompt("Unidade (ex: m, pç, cx):", "pç");
+    if (!unidade || unidade.trim() === "") {
+        unidade = "pç"; // Valor padrão se vazio
+    }
+
+    addItem(catIndex, caminho, nome, unidade);
+}
+
 
 function fecharModal() {
   document.getElementById("modal").style.display = "none";
@@ -247,18 +264,14 @@ function excluirSubcategoria(catIndex, caminho) {
   }
 }
 
-function addItem(catIndex, caminho) {
-  const nome = prompt("Nome do novo item:");
-  if (!nome || nome.trim() === "") {
-    if (nome !== null) alert("O nome do item não pode ser vazio.");
-    return;
-  }
-
+// Alterada a função addItem para receber nome e unidade
+function addItem(catIndex, caminho, nome, unidade) {
   const atual = getAtual(catIndex, caminho);
   if (atual) {
     atual.itens.push({
       id: crypto.randomUUID(),
-      nome: nome.trim()
+      nome: nome.trim(),
+      unidade: unidade.trim()
     });
     salvar();
     abrirModal(catIndex, caminho); // Re-renderiza o modal para mostrar o novo item
@@ -270,12 +283,19 @@ function editarItem(catIndex, caminho, itemId) {
   if (atual) {
     const item = atual.itens.find(i => i.id === itemId);
     if (item) {
-      const novo = prompt("Novo nome do item:", item.nome);
-      if (!novo || novo.trim() === "") {
-        if (novo !== null) alert("O nome do item não pode ser vazio.");
+      const novoNome = prompt("Novo nome do item:", item.nome);
+      if (!novoNome || novoNome.trim() === "") {
+        if (novoNome !== null) alert("O nome do item não pode ser vazio.");
         return;
       }
-      item.nome = novo.trim();
+      
+      let novaUnidade = prompt("Nova unidade (ex: m, pç, cx):", item.unidade);
+      if (!novaUnidade || novaUnidade.trim() === "") {
+        novaUnidade = "pç"; // Valor padrão se vazio
+      }
+
+      item.nome = novoNome.trim();
+      item.unidade = novaUnidade.trim();
       salvar();
       abrirModal(catIndex, caminho); // Re-renderiza o modal para mostrar o item atualizado
     }
@@ -344,7 +364,7 @@ function abrirBuscaGlobal() {
         divResultado.innerHTML += `
           <div class="lista-item">
             <span onclick='addLista(${item.catIndex}, ${JSON.stringify(item.caminhoIndex)}, ${JSON.stringify(item)});'>
-              📌 ${item.nome}<br>
+              📌 ${item.nome} (${item.unidade})<br>
               <small>${item.caminhoNome}</small>
             </span>
           </div>
@@ -365,17 +385,19 @@ function fecharBusca() {
 function addLista(catIndex, caminho, item) {
   const caminhoNome = getNomeCaminho(catIndex, caminho);
 
+  // Encontra um item existente na lista com o mesmo ID para incrementar a quantidade
+  // ou com o mesmo nome e unidade se o ID ainda não existir para itens antigos
   let existente = db.lista.find(i => i.id === item.id);
 
   if (existente) {
       existente.qtd++;
   } else {
+      // Para itens recém-adicionados que já possuem unidade
       db.lista.push({ ...item, caminho: caminhoNome, qtd: 1 });
   }
 
   salvar();
   renderLista();
-  // Removido fecharModal() daqui para manter o modal aberto
 }
 
 function renderLista() {
@@ -410,7 +432,7 @@ function renderLista() {
     grupos[caminho].sort((a, b) => a.nome.localeCompare(b.nome)).forEach(item => {
       grupoHtml += `
         <div class="lista-item">
-          <span>${item.nome} (${item.qtd})</span>
+          <span>${item.nome} (${item.qtd} ${item.unidade})</span>
           <div>
             <button onclick="menos('${item.id}')">-</button>
             <button onclick="mais('${item.id}')">+</button>
@@ -523,7 +545,8 @@ function gerarPDF() {
         y += lineHeight;
         doc.setFont("helvetica", "normal");
       }
-      doc.text(`- ${item.nome} (${item.qtd})`, margin + 5, y, { maxWidth: maxLineWidth - 5 });
+      // Incluindo a unidade no PDF
+      doc.text(`- ${item.nome} (${item.qtd} ${item.unidade})`, margin + 5, y, { maxWidth: maxLineWidth - 5 });
       y += lineHeight;
     });
 
@@ -533,5 +556,5 @@ function gerarPDF() {
   doc.save("lista-de-materiais.pdf");
 }
 
-// ---------------- INIT ----------------
+// ---------------- Init ----------------
 render();
