@@ -130,7 +130,7 @@ function abrirModal(catIndex, caminho) {
   const modal = document.getElementById("modal");
   const conteudo = document.getElementById("modalConteudo");
   const modalTitulo = document.getElementById("modalTitulo");
-  const modalFooter = document.getElementById("modalFooter"); // Novo footer para botões
+  const modalFooter = document.getElementById("modalFooter");
 
   const atual = getAtual(catIndex, caminho);
   if (!atual) {
@@ -157,7 +157,7 @@ function abrirModal(catIndex, caminho) {
     htmlConteudo += `<p style='text-align: center; color: #94a3b8;'>Nenhuma subcategoria nesta pasta.</p>`;
   }
 
-  htmlConteudo += `<hr style="border-color: #334155; margin: 15px 0;">`; // Separador
+  htmlConteudo += `<hr style="border-color: #334155; margin: 15px 0;">`;
 
   // Itens
   if (atual.itens.length > 0) {
@@ -179,35 +179,34 @@ function abrirModal(catIndex, caminho) {
 
   // Botões do footer
   let htmlFooter = ``;
-  if (caminho.length > 0) { // Se não é a categoria principal
+  if (caminho.length > 0) {
     const parentCaminho = JSON.stringify(caminho.slice(0, -1));
     htmlFooter += `<button onclick='abrirModal(${catIndex}, ${parentCaminho})' class="btn-voltar">⬅ Voltar</button>`;
-  } else { // Se é a categoria principal
+  } else {
     htmlFooter += `<button onclick='fecharModal()' class="btn-voltar">✕ Fechar</button>`;
   }
   htmlFooter += `<button onclick='addSubcategoria(${catIndex}, ${JSON.stringify(caminho)})'>+ Add Subcategoria</button>`;
-  htmlFooter += `<button onclick='promptAddItem(${catIndex}, ${JSON.stringify(caminho)})'>+ Add Item</button>`; // Chamada para nova função
-  
-  modalFooter.innerHTML = htmlFooter; // Renderiza os botões no footer
+  htmlFooter += `<button onclick='promptAddItem(${catIndex}, ${JSON.stringify(caminho)})'>+ Add Item</button>`;
+
+  modalFooter.innerHTML = htmlFooter;
   modal.style.display = "flex";
 }
 
-// Nova função para pedir nome e unidade do item
+// Pede nome e unidade do item via prompt
 function promptAddItem(catIndex, caminho) {
-    const nome = prompt("Nome do novo item:");
-    if (!nome || nome.trim() === "") {
-        if (nome !== null) alert("O nome do item não pode ser vazio.");
-        return;
-    }
+  const nome = prompt("Nome do novo item:");
+  if (!nome || nome.trim() === "") {
+    if (nome !== null) alert("O nome do item não pode ser vazio.");
+    return;
+  }
 
-    let unidade = prompt("Unidade (ex: m, pç, cx):", "pç");
-    if (!unidade || unidade.trim() === "") {
-        unidade = "pç"; // Valor padrão se vazio
-    }
+  let unidade = prompt("Unidade (ex: m, pç, cx):", "pç");
+  if (!unidade || unidade.trim() === "") {
+    unidade = "pç";
+  }
 
-    addItem(catIndex, caminho, nome, unidade);
+  addItem(catIndex, caminho, nome, unidade);
 }
-
 
 function fecharModal() {
   document.getElementById("modal").style.display = "none";
@@ -228,7 +227,7 @@ function addSubcategoria(catIndex, caminho) {
       itens: []
     });
     salvar();
-    abrirModal(catIndex, caminho); // Re-renderiza o modal para mostrar a nova subcategoria
+    abrirModal(catIndex, caminho);
   }
 }
 
@@ -245,7 +244,7 @@ function editarSubcategoria(catIndex, caminho) {
     }
     parent.subcategorias[subIndex].nome = novo.trim();
     salvar();
-    abrirModal(catIndex, caminho); // Re-renderiza o modal para mostrar a subcategoria atualizada
+    abrirModal(catIndex, caminho);
   }
 }
 
@@ -259,11 +258,10 @@ function excluirSubcategoria(catIndex, caminho) {
   if (parent && parent.subcategorias[subIndex]) {
     parent.subcategorias.splice(subIndex, 1);
     salvar();
-    abrirModal(catIndex, parentCaminho); // Re-renderiza o modal para mostrar o estado atual
+    abrirModal(catIndex, parentCaminho);
   }
 }
 
-// Alterada a função addItem para receber nome e unidade
 function addItem(catIndex, caminho, nome, unidade) {
   const atual = getAtual(catIndex, caminho);
   if (atual) {
@@ -273,7 +271,7 @@ function addItem(catIndex, caminho, nome, unidade) {
       unidade: unidade.trim()
     });
     salvar();
-    abrirModal(catIndex, caminho); // Re-renderiza o modal para mostrar o novo item
+    abrirModal(catIndex, caminho);
   }
 }
 
@@ -287,16 +285,16 @@ function editarItem(catIndex, caminho, itemId) {
         if (novoNome !== null) alert("O nome do item não pode ser vazio.");
         return;
       }
-      
+
       let novaUnidade = prompt("Nova unidade (ex: m, pç, cx):", item.unidade);
       if (!novaUnidade || novaUnidade.trim() === "") {
-        novaUnidade = "pç"; // Valor padrão se vazio
+        novaUnidade = "pç";
       }
 
       item.nome = novoNome.trim();
       item.unidade = novaUnidade.trim();
       salvar();
-      abrirModal(catIndex, caminho); // Re-renderiza o modal para mostrar o item atualizado
+      abrirModal(catIndex, caminho);
     }
   }
 }
@@ -308,33 +306,30 @@ function excluirItem(catIndex, caminho, itemId) {
   if (atual) {
     atual.itens = atual.itens.filter(i => i.id !== itemId);
     salvar();
-    abrirModal(catIndex, caminho); // Re-renderiza o modal para mostrar o estado atual
+    abrirModal(catIndex, caminho);
   }
 }
 
 // ---------------- BUSCA GLOBAL ----------------
 function coletarTodosItens() {
-  let lista = [];
+  const lista = [];
 
-  function percorrer(catIndex, categoriaAtual, caminhoAtual) {
-    if (!categoriaAtual) return;
-
-    categoriaAtual.itens.forEach(item => {
+  function percorrer(catIndex, caminho, node) {
+    node.itens.forEach(item => {
       lista.push({
         ...item,
-        catIndex: catIndex,
-        caminhoIndex: caminhoAtual,
-        caminhoNome: getNomeCaminho(catIndex, caminhoAtual)
+        catIndex,
+        caminhoIndex: caminho,
+        caminhoNome: getNomeCaminho(catIndex, caminho)
       });
     });
-
-    categoriaAtual.subcategorias.forEach((sub, i) => {
-      percorrer(catIndex, sub, [...caminhoAtual, i]);
+    node.subcategorias.forEach((sub, i) => {
+      percorrer(catIndex, [...caminho, i], sub);
     });
   }
 
   db.categorias.forEach((cat, i) => {
-    percorrer(i, cat, []);
+    percorrer(i, [], cat);
   });
 
   return lista;
@@ -348,27 +343,27 @@ function abrirBuscaGlobal() {
   divResultado.innerHTML = "";
 
   if (termo.length < 2) {
-      divResultado.innerHTML = "<p style='text-align: center; color: #94a3b8;'>Digite pelo menos 2 caracteres para buscar.</p>";
-      document.getElementById("modalBusca").style.display = "flex";
-      return;
+    divResultado.innerHTML = "<p style='text-align: center; color: #94a3b8;'>Digite pelo menos 2 caracteres para buscar.</p>";
+    document.getElementById("modalBusca").style.display = "flex";
+    return;
   }
 
   const resultados = coletarTodosItens()
     .filter(i => i.nome.toLowerCase().includes(termo));
 
   if (resultados.length === 0) {
-      divResultado.innerHTML = "<p style='text-align: center; color: #94a3b8;'>Nenhum resultado encontrado para '" + termo + "'.</p>";
+    divResultado.innerHTML = "<p style='text-align: center; color: #94a3b8;'>Nenhum resultado encontrado para '" + termo + "'.</p>";
   } else {
-      resultados.forEach(item => {
-        divResultado.innerHTML += `
-          <div class="lista-item">
-            <span onclick='addLista(${item.catIndex}, ${JSON.stringify(item.caminhoIndex)}, ${JSON.stringify(item)});'>
-              📌 ${item.nome} (${item.unidade})<br>
-              <small>${item.caminhoNome}</small>
-            </span>
-          </div>
-        `;
-      });
+    resultados.forEach(item => {
+      divResultado.innerHTML += `
+        <div class="lista-item">
+          <span onclick='addLista(${item.catIndex}, ${JSON.stringify(item.caminhoIndex)}, ${JSON.stringify(item)}); fecharBusca();'>
+            📌 ${item.nome} (${item.unidade})<br>
+            <small>${item.caminhoNome}</small>
+          </span>
+        </div>
+      `;
+    });
   }
 
   document.getElementById("modalBusca").style.display = "flex";
@@ -384,41 +379,40 @@ function fecharBusca() {
 function addLista(catIndex, caminho, item) {
   const caminhoNome = getNomeCaminho(catIndex, caminho);
 
-  // Encontra um item existente na lista com o mesmo ID para incrementar a quantidade
-  // ou com o mesmo nome e unidade se o ID ainda não existir para itens antigos
   let existente = db.lista.find(i => i.id === item.id);
 
   if (existente) {
-      existente.qtd++;
+    existente.qtd++;
   } else {
-      // Para itens recém-adicionados que já possuem unidade
-      db.lista.push({ ...item, caminho: caminhoNome, qtd: 1 });
+    db.lista.push({ ...item, caminho: caminhoNome, qtd: 1 });
   }
 
   salvar();
   renderLista();
 }
 
-// Função para atualizar a quantidade do item na lista
+// FIX: Separada a lógica de remoção silenciosa (sem confirm) da remoção com confirm
+function removerSilencioso(id) {
+  db.lista = db.lista.filter(i => i.id !== id);
+  salvar();
+  renderLista();
+}
+
 function atualizarQuantidadeLista(id, novaQtd) {
   const item = db.lista.find(i => i.id === id);
   if (item) {
     const parsedQtd = parseInt(novaQtd);
-    if (!isNaN(parsedQtd) && parsedQtd >= 0) { // Garante que é um número válido e não negativo
+    if (!isNaN(parsedQtd) && parsedQtd > 0) {
       item.qtd = parsedQtd;
-      if (item.qtd === 0) { // Se a quantidade for 0, remove o item
-          remover(id); // Reutiliza a função de remover, que já tem a confirmação
-      } else {
-          salvar();
-          renderLista();
-      }
-    } else if (novaQtd.trim() === '') { // Se o campo ficou vazio, também remove
-        remover(id);
+      salvar();
+      renderLista();
+    } else if (!isNaN(parsedQtd) && parsedQtd === 0) {
+      // FIX: quando qtd = 0, remove diretamente sem pedir confirmação dupla
+      removerSilencioso(id);
+    } else if (novaQtd.trim() === '') {
+      removerSilencioso(id);
     } else {
-        // Opcional: alertar o usuário sobre entrada inválida, ou simplesmente não fazer nada
-        // alert("Por favor, insira uma quantidade numérica válida.");
-        // Re-renderiza para reverter a mudança visual do input se a entrada for inválida
-        renderLista();
+      renderLista(); // entrada inválida: reverte visualmente
     }
   }
 }
@@ -434,8 +428,8 @@ function renderLista() {
   });
 
   if (Object.keys(grupos).length === 0) {
-      div.innerHTML = "<p style='text-align: center; color: #94a3b8;'>Sua lista de materiais está vazia.</p>";
-      return;
+    div.innerHTML = "<p style='text-align: center; color: #94a3b8;'>Sua lista de materiais está vazia.</p>";
+    return;
   }
 
   Object.keys(grupos).sort().forEach(caminho => {
@@ -457,9 +451,9 @@ function renderLista() {
         <div class="lista-item">
           <span>${item.nome} (${item.unidade})</span>
           <div>
-            <input type="number" 
-                   class="qtd-input" 
-                   value="${item.qtd}" 
+            <input type="number"
+                   class="qtd-input"
+                   value="${item.qtd}"
                    min="0"
                    onchange="atualizarQuantidadeLista('${item.id}', this.value)"
                    onblur="atualizarQuantidadeLista('${item.id}', this.value)">
@@ -476,8 +470,8 @@ function renderLista() {
 function toggleGrupo(groupId) {
   const grupoConteudo = document.getElementById(groupId);
   if (!grupoConteudo) {
-      console.error("Elemento grupoConteudo não encontrado para ID:", groupId);
-      return;
+    console.error("Elemento grupoConteudo não encontrado para ID:", groupId);
+    return;
   }
   const toggleIcon = grupoConteudo.previousElementSibling.querySelector('.toggle-icon');
 
@@ -492,34 +486,30 @@ function toggleGrupo(groupId) {
   }
 }
 
-// As funções 'mais' e 'menos' não são mais necessárias para edição via teclado,
-// mas podem ser mantidas se você quiser adicionar botões de incremento/decremento novamente no futuro.
-// Por enquanto, vou deixá-las, mas elas não serão chamadas.
 function mais(id) {
   const item = db.lista.find(i => i.id === id);
   if (item) {
-      item.qtd++;
-      salvar();
-      renderLista();
+    item.qtd++;
+    salvar();
+    renderLista();
   }
 }
 
 function menos(id) {
   const item = db.lista.find(i => i.id === id);
   if (item) {
-      if (item.qtd > 1) {
-          item.qtd--;
-      } else {
-          remover(id);
-          return;
-      }
-      salvar();
-      renderLista();
+    if (item.qtd > 1) {
+      item.qtd--;
+    } else {
+      remover(id);
+      return;
+    }
+    salvar();
+    renderLista();
   }
 }
 
 function remover(id) {
-  // A confirmação para remover já existe, será chamada se a qtd for 0
   if (!confirm("Deseja remover este item da lista?")) return;
   db.lista = db.lista.filter(i => i.id !== id);
   salvar();
@@ -529,8 +519,8 @@ function remover(id) {
 // ---------------- PDF ----------------
 function gerarPDF() {
   if (db.lista.length === 0) {
-      alert("Sua lista de materiais está vazia. Adicione itens antes de gerar o PDF.");
-      return;
+    alert("Sua lista de materiais está vazia. Adicione itens antes de gerar o PDF.");
+    return;
   }
 
   const { jsPDF } = window.jspdf;
@@ -542,27 +532,32 @@ function gerarPDF() {
   const maxPageHeight = doc.internal.pageSize.height - (2 * margin);
   const maxLineWidth = doc.internal.pageSize.width - (2 * margin);
 
-  // --- Adiciona o Logo ---
-  const imgData = 'srt-logo.png'; // Nome do arquivo do seu logo
-  const imgWidth = 40; // Largura do logo no PDF
-  const imgHeight = 15; // Altura do logo no PDF (ajuste conforme proporção)
+  // FIX: Função auxiliar para desenhar cabeçalho — evita código duplicado
+  function desenharCabecalho() {
+    // FIX: Só tenta adicionar imagem se o logo estiver carregado (evita erro de caminho inválido)
+    if (window._srtLogoData) {
+      const imgWidth = 40;
+      const imgHeight = 15;
+      doc.addImage(window._srtLogoData, 'PNG', margin, y, imgWidth, imgHeight);
+      y += imgHeight + 5;
+    } else {
+      // Se não tiver logo, apenas adiciona espaço
+      y += 5;
+    }
 
-  // Centraliza a imagem ou posiciona à esquerda
-  // doc.addImage(imgData, 'PNG', (doc.internal.pageSize.width / 2) - (imgWidth / 2), y, imgWidth, imgHeight);
-  doc.addImage(imgData, 'PNG', margin, y, imgWidth, imgHeight); // Posição à esquerda
-  y += imgHeight + 5; // Adiciona espaço após o logo
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(14);
+    doc.text("Sergio Munhoz", margin, y);
+    y += lineHeight;
 
-  // --- Adiciona Nome e Contato ---
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(14); // Fonte ligeiramente maior para o nome/empresa
-  doc.text("Sergio Munhoz", margin, y);
-  y += lineHeight;
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(10);
+    doc.text("Celular/Whatsapp: 11-9-9370-0324", margin, y);
+    y += 15;
+  }
 
-  doc.setFont("helvetica", "normal");
-  doc.setFontSize(10); // Fonte menor para o contato
-  doc.text("Celular/Whatsapp: 11-9-9370-0324", margin, y);
-  y += 15; // Espaço maior após o cabeçalho completo
-
+  // Cabeçalho inicial
+  desenharCabecalho();
 
   doc.setFont("helvetica", "bold");
   doc.setFontSize(18);
@@ -582,20 +577,11 @@ function gerarPDF() {
     if (y + lineHeight * (grupos[caminho].length + 1) + 5 > maxPageHeight) {
       doc.addPage();
       y = margin;
-      // Recomeça o cabeçalho se a página virar
-      doc.addImage(imgData, 'PNG', margin, y, imgWidth, imgHeight); 
-      y += imgHeight + 5; 
-      doc.setFont("helvetica", "bold");
-      doc.setFontSize(14);
-      doc.text("Sergio Munhoz", margin, y);
-      y += lineHeight;
-      doc.setFont("helvetica", "normal");
-      doc.setFontSize(10);
-      doc.text("Celular/Whatsapp: 11-9-9370-0324", margin, y);
-      y += 15;
+      desenharCabecalho();
     }
 
     doc.setFont("helvetica", "bold");
+    doc.setFontSize(12);
     doc.text(caminho, margin, y, { maxWidth: maxLineWidth });
     y += lineHeight;
 
@@ -604,17 +590,7 @@ function gerarPDF() {
       if (y + lineHeight > maxPageHeight) {
         doc.addPage();
         y = margin;
-        // Recomeça o cabeçalho se a página virar
-        doc.addImage(imgData, 'PNG', margin, y, imgWidth, imgHeight); 
-        y += imgHeight + 5; 
-        doc.setFont("helvetica", "bold");
-        doc.setFontSize(14);
-        doc.text("Sergio Munhoz", margin, y);
-        y += lineHeight;
-        doc.setFont("helvetica", "normal");
-        doc.setFontSize(10);
-        doc.text("Celular/Whatsapp: 11-9-9370-0324", margin, y);
-        y += 15;
+        desenharCabecalho();
 
         doc.setFont("helvetica", "bold");
         doc.setFontSize(12);
@@ -622,7 +598,6 @@ function gerarPDF() {
         y += lineHeight;
         doc.setFont("helvetica", "normal");
       }
-      // Incluindo a unidade no PDF
       doc.text(`- ${item.nome} (${item.qtd} ${item.unidade})`, margin + 5, y, { maxWidth: maxLineWidth - 5 });
       y += lineHeight;
     });
@@ -633,5 +608,24 @@ function gerarPDF() {
   doc.save("lista-de-materiais.pdf");
 }
 
+// FIX: Tenta pré-carregar o logo ao iniciar. Se não encontrar, continua sem ele.
+function preCarregarLogo() {
+  const img = new Image();
+  img.onload = function () {
+    const canvas = document.createElement('canvas');
+    canvas.width = img.width;
+    canvas.height = img.height;
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(img, 0, 0);
+    window._srtLogoData = canvas.toDataURL('image/png');
+  };
+  img.onerror = function () {
+    console.warn('Logo srt-logo.png não encontrado. O PDF será gerado sem logo.');
+    window._srtLogoData = null;
+  };
+  img.src = './srt-logo.png';
+}
+
 // ---------------- Init ----------------
+preCarregarLogo();
 render();

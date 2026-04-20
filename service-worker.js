@@ -1,16 +1,15 @@
 // service-worker.js
 
-const CACHE_NAME = 'srt-lista-v2'; // Alterado para v2 para forçar a atualização do cache
+const CACHE_NAME = 'srt-lista-v3'; // Versão incrementada para forçar atualização
 const urlsToCache = [
-  './', // Cache a raiz do site, que deve resolver para index.html
+  './',
   './index.html',
   './style.css',
   './app.js',
-  'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js',
-  // Adicione aqui os ícones que você vai criar
-  './icon-192.png',
-  './icon-512.png',
-  './srt-logo.png' // Adicionado o logo ao cache
+  'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js'
+  // FIX: Removidos arquivos de imagem do cache obrigatório (icon-192.png, icon-512.png, srt-logo.png)
+  // pois se eles não existirem, o install do Service Worker vai falhar e o app não funcionará offline.
+  // As imagens serão cacheadas dinamicamente na primeira vez que forem carregadas.
 ];
 
 self.addEventListener('install', event => {
@@ -20,6 +19,7 @@ self.addEventListener('install', event => {
         console.log('Cache aberto');
         return cache.addAll(urlsToCache);
       })
+      .then(() => self.skipWaiting()) // Ativa imediatamente sem esperar o reload
   );
 });
 
@@ -27,20 +27,17 @@ self.addEventListener('fetch', event => {
   event.respondWith(
     caches.match(event.request)
       .then(response => {
-        // Retorna o recurso do cache se encontrado
         if (response) {
           return response;
         }
-        // Caso contrário, faz a requisição normal à rede
         return fetch(event.request).then(
           response => {
-            // Verifica se recebemos uma resposta válida
-            if (!response || response.status !== 200 || response.type !== 'basic') {
+            // Só cacheia respostas válidas de tipo 'basic' (mesma origem) ou 'cors'
+            if (!response || response.status !== 200 ||
+                (response.type !== 'basic' && response.type !== 'cors')) {
               return response;
             }
 
-            // Clona a resposta. Uma resposta é um stream e só pode ser consumida uma vez.
-            // Precisamos cloná-la para que o navegador possa consumi-la e para que possamos colocá-la no cache.
             const responseToCache = response.clone();
 
             caches.open(CACHE_NAME)
@@ -50,9 +47,15 @@ self.addEventListener('fetch', event => {
 
             return response;
           }
-        );
+        ).catch(() => {
+          // FIX: Se a rede falhar e não tiver cache, retorna uma resposta de fallback
+          // para navegação (evita tela em branco offline)
+          if (event.request.mode === 'navigate') {
+            return caches.match('./index.html');
+          }
+        });
       })
-    );
+  );
 });
 
 self.addEventListener('activate', event => {
@@ -62,10 +65,11 @@ self.addEventListener('activate', event => {
       return Promise.all(
         cacheNames.map(cacheName => {
           if (cacheWhitelist.indexOf(cacheName) === -1) {
+            console.log('Deletando cache antigo:', cacheName);
             return caches.delete(cacheName);
           }
         })
       );
-    })
+    }).then(() => self.clients.claim()) // Assume controle imediato das páginas abertas
   );
 });
